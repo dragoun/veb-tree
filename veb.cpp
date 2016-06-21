@@ -6,6 +6,17 @@
 * this file. It is also avaible at <https://opensource.org/licenses/MIT>.      *
 *******************************************************************************/
 
+/***************************************************************************//**
+ * @file veb.cpp
+ *
+ * @brief      File containing definition of a class implementing Van Emde Boas
+ *             tree data structure.
+ * @author     Dominik Dragoun (dominik@dragoun.com)
+ * @date       June, 2016
+ * @copyright  Copyright (C) 2016 Dominik Dragoun.
+ * @license    This project is released undes the MIT License.
+ ******************************************************************************/
+
 #include "veb.h"
 
 bool vEB_insert ( TvEB * tree, int val )
@@ -98,5 +109,27 @@ bool vEB_find ( TvEB * tree, int val, int & res )
 
 bool vEB_succ ( TvEB * tree, int val, int & res )
 {
-  return false;
+  int lowVal = low ( val );
+  int highVal = high ( val );
+  int i = highVal;
+  int j = UNDEFINED;
+  if ( lowVal < tree->cluster[i]->max )
+  {
+    if ( !vEB_succ ( tree->cluster[i], lowVal, j ) )
+    {
+      return false;
+    }
+  }
+  else
+  {
+    if ( !vEB_succ ( tree->summary, highVal, i ) )
+    {
+      return false;
+    }
+
+    j = tree->cluster[i]->min;
+  }
+
+  res = index ( i, j );
+  return true;
 }

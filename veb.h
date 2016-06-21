@@ -12,7 +12,7 @@
  * @brief      File containing declarations of a class implementing Van Emde
  *             Boas tree data structure.
  * @author     Dominik Dragoun (dominik@dragoun.com)
- * @date       May, 2016
+ * @date       June, 2016
  * @copyright  Copyright (C) 2016 Dominik Dragoun.
  * @license    This project is released undes the MIT License.
  ******************************************************************************/
