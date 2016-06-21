@@ -133,3 +133,8 @@ bool vEB_succ ( TvEB * tree, int val, int & res )
   res = index ( i, j );
   return true;
 }
+
+bool vEB_pred ( TvEB * tree, int val, int & res )
+{
+  return false;
+}
