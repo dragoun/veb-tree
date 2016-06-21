@@ -108,6 +108,19 @@ int high ( int val )
 }
 
 /***************************************************************************//**
+ * @brief      Returns the value on index low in the cluster high.
+ *
+ * @param[in]  high  The cluster index.
+ * @param[in]  low   The index of the element in the cluster.
+ *
+ * @return     The value of the element.
+ ******************************************************************************/
+int index ( int high, int low )
+{
+  return high * uniSqrt + low;
+}
+
+/***************************************************************************//**
  * @brief      Finds the lowest value stored in the given tree.
  *
  * @param[in]  tree   The pointer to the van Emde Boas tree.
@@ -161,12 +174,11 @@ bool vEB_insert ( TvEB * tree, int val );
  *
  * @param[in]  tree   The pointer to the van Emde Boas tree.
  * @param[in]  val    The value of the element to remove.
- * @param[out] res    The removed element.
  *
  * @retval     true   Successfully removed the value.
  * @retval     false  Failed to remove the value.
  ******************************************************************************/
-bool vEB_delete ( TvEB * tree, int val, int & res );
+bool vEB_delete ( TvEB * tree, int val );
 
 /***************************************************************************//**
  * @brief      Finds if the given value is in the given vEB tree.
