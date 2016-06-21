@@ -17,7 +17,42 @@
  * @license    This project is released undes the MIT License.
  ******************************************************************************/
 
-#include "veb.h"
+#include "veb.hpp"
+
+int low ( int val )
+{
+  return val % uniSqrt;
+}
+
+int high ( int val )
+{
+  return val / uniSqrt;
+}
+
+int index ( int high, int low )
+{
+  return high * uniSqrt + low;
+}
+
+bool vEB_min ( TvEB * tree, int & res )
+{
+  if ( tree )
+  {
+    res = tree->min;
+    return true;
+  }
+  return false;
+}
+
+bool vEB_max ( TvEB * tree, int & res )
+{
+  if ( tree )
+  {
+    res = tree->max;
+    return true;
+  }
+  return false;
+}
 
 bool vEB_insert ( TvEB * tree, int val )
 {

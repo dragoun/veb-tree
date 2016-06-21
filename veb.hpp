@@ -22,6 +22,7 @@
 
 #include <cmath>
 #include <climits>
+#include <cstdlib>
 
 #define UNDEFINED INT_MIN
 
@@ -89,10 +90,7 @@ struct TvEB
  *
  * @return     The element's index in the cluster.
  ******************************************************************************/
-int low ( int val )
-{
-  return val % uniSqrt;
-}
+int low ( int val );
 
 /***************************************************************************//**
  * @brief      Returns the index of the element's cluster.
@@ -102,10 +100,7 @@ int low ( int val )
  *
  * @return     The index of the element's cluster.
  ******************************************************************************/
-int high ( int val )
-{
-  return val / uniSqrt;
-}
+int high ( int val );
 
 /***************************************************************************//**
  * @brief      Returns the value on index low in the cluster high.
@@ -115,10 +110,7 @@ int high ( int val )
  *
  * @return     The value of the element.
  ******************************************************************************/
-int index ( int high, int low )
-{
-  return high * uniSqrt + low;
-}
+int index ( int high, int low );
 
 /***************************************************************************//**
  * @brief      Finds the lowest value stored in the given tree.
@@ -129,15 +121,7 @@ int index ( int high, int low )
  * @retval     true   Successfully found the minimum.
  * @retval     false  Failed to found the minimum.
  ******************************************************************************/
-bool vEB_min ( TvEB * tree, int & res )
-{
-  if ( tree )
-  {
-    res = tree->min;
-    return true;
-  }
-  return false;
-}
+bool vEB_min ( TvEB * tree, int & res );
 
 /***************************************************************************//**
  * @brief      Finds the highest value stored in the given tree.
@@ -148,15 +132,7 @@ bool vEB_min ( TvEB * tree, int & res )
  * @retval     true   Successfully found the maximum.
  * @retval     false  Failed to found the maximum.
  ******************************************************************************/
-bool vEB_max ( TvEB * tree, int & res )
-{
-  if ( tree )
-  {
-    res = tree->max;
-    return true;
-  }
-  return false;
-}
+bool vEB_max ( TvEB * tree, int & res );
 
 /***************************************************************************//**
  * @brief      Inserts the given value into the given vEB tree.

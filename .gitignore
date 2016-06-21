@@ -1,5 +1,6 @@
 # OS X specific files
 .DS_Store
+test.dSYM
 
 # Compiled Object files
 *.slo
@@ -30,3 +31,4 @@
 *.out
 *.app
 veb
+test
