@@ -21,6 +21,12 @@
 #define __VEB_H_458976543568798867538649758687654752463747856374562543646__
 
 #include <cmath>
+#include <climits>
+
+#define UNDEFINED INT_MIN
+
+const int uni = 16;
+const int uniSqrt = sqrt ( uni );
 
 /***************************************************************************//**
  * @brief      Struct containing the Van Emde Boas tree.
@@ -39,10 +45,39 @@
  ******************************************************************************/
 struct TvEB
 {
-  int u;
+  /*************************************************************************//**
+   * @brief      Constructor.
+   ****************************************************************************/
+  TvEB()
+  {
+    min = UNDEFINED;
+    max = UNDEFINED;
+    summary = NULL;
+    cluster = new TvEB * [uniSqrt];
+    for ( int i = 0; i < uniSqrt; ++i )
+    {
+      cluster[i] = NULL;
+    }
+  }
+
+  /*************************************************************************//**
+   * @brief      Minimal value in the tree.
+   ****************************************************************************/
   int min;
+
+  /*************************************************************************//**
+   * @brief      Maximal value in the tree.
+   ****************************************************************************/
   int max;
+
+  /*************************************************************************//**
+   * @brief      Pointer to the summary structure of the tree.
+   ****************************************************************************/
   TvEB * summary;
+
+  /*************************************************************************//**
+   * @brief      Pointer to the array of clusters of the tree.
+   ****************************************************************************/
   TvEB ** cluster;
 };
 
@@ -50,14 +85,13 @@ struct TvEB
 /***************************************************************************//**
  * @brief      Returns the element's index in the cluster.
  *
- * @param[in]  x     The value of the element.
- * @param[in]  u     The size of the universe.
+ * @param[in]  val   The value of the element.
  *
  * @return     The element's index in the cluster.
  ******************************************************************************/
-int low ( int x, int u )
+int low ( int val )
 {
-  return x % ( int ) sqrt ( u );
+  return val % uniSqrt;
 }
 
 /***************************************************************************//**
@@ -68,9 +102,9 @@ int low ( int x, int u )
  *
  * @return     The index of the element's cluster.
  ******************************************************************************/
-int high ( int x, int u )
+int high ( int val )
 {
-  return x / ( int ) sqrt ( u );
+  return val / uniSqrt;
 }
 
 /***************************************************************************//**
@@ -114,7 +148,7 @@ bool vEB_max ( TvEB * tree, int & res )
 /***************************************************************************//**
  * @brief      Inserts the given value into the given vEB tree.
  *
- * @param[in]  tree   The pointer to the van Emde Boas tree to insert the value.
+ * @param[in]  tree   The pointer to the van Emde Boas tree.
  * @param[in]  val    The value of the element to insert.
  *
  * @retval     true   Successfully inserted the value.
