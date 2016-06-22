@@ -65,6 +65,16 @@ struct TvEB
     }
   }
 
+  ~TvEB()
+  {
+    if ( summary ) delete summary;
+    for ( int i = 0; i < uniSqrt; ++i )
+    {
+      if ( cluster[i] ) delete cluster[i];
+    }
+    delete [] cluster;
+  }
+
   /*************************************************************************//**
    * @brief      Minimal value in the tree.
    ****************************************************************************/
