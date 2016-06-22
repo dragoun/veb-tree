@@ -17,5 +17,5 @@ clean:
 cleanest: clean
 	rm -f test
 
-test.o: test.cpp
+test.o: test.cpp veb.hpp
 veb.o: veb.cpp veb.hpp

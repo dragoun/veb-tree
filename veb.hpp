@@ -24,6 +24,10 @@
 #include <climits>
 #include <cstdlib>
 
+#include <cstdio>
+#include <iostream>
+using namespace std;
+
 #define UNDEFINED INT_MIN
 
 const int uni = 16;
@@ -143,7 +147,7 @@ bool vEB_max ( TvEB * tree, int & res );
  * @retval     true   Successfully inserted the value.
  * @retval     false  Failed to insert the value.
  ******************************************************************************/
-bool vEB_insert ( TvEB * tree, int val );
+bool vEB_insert ( TvEB *& tree, int val );
 
 /***************************************************************************//**
  * @brief      Removes the given value from the given vEB tree.
@@ -154,19 +158,18 @@ bool vEB_insert ( TvEB * tree, int val );
  * @retval     true   Successfully removed the value.
  * @retval     false  Failed to remove the value.
  ******************************************************************************/
-bool vEB_delete ( TvEB * tree, int val );
+bool vEB_delete ( TvEB *& tree, int val );
 
 /***************************************************************************//**
  * @brief      Finds if the given value is in the given vEB tree.
  *
  * @param[in]  tree   The pointer to the van Emde Boas tree.
  * @param[in]  val    The value of the element to find.
- * @param[out] res    The found element.
  *
  * @retval     true   Successfully found the element.
  * @retval     false  Failed to found the element.
  ******************************************************************************/
-bool vEB_find ( TvEB * tree, int val, int & res );
+bool vEB_find ( TvEB * tree, int val );
 
 /***************************************************************************//**
  * @brief      Finds the smallest value at least the given value in the given
@@ -193,5 +196,7 @@ bool vEB_succ ( TvEB * tree, int val, int & res );
  * @retval     false  Failed to found the predecessor.
  ******************************************************************************/
 bool vEB_pred ( TvEB * tree, int val, int & res );
+
+void vEB_print ( TvEB * tree );
 
 #endif /* __VEB_H_458976543568798867538649758687654752463747856374562543646__ */
