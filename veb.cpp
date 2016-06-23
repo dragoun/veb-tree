@@ -19,19 +19,19 @@
 
 #include "veb.hpp"
 
-int low ( int val )
+int low ( TvEB * tree, int val )
 {
-  return val % uniSqrt;
+  return val % tree->uniSqrt;
 }
 
-int high ( int val )
+int high ( TvEB * tree, int val )
 {
-  return val / uniSqrt;
+  return val / tree->uniSqrt;
 }
 
-int index ( int high, int low )
+int index ( TvEB * tree, int high, int low )
 {
-  return high * uniSqrt + low;
+  return high * tree->uniSqrt + low;
 }
 
 bool vEB_min ( TvEB * tree, int & res )
@@ -54,14 +54,19 @@ bool vEB_max ( TvEB * tree, int & res )
   return false;
 }
 
-bool vEB_insert ( TvEB *& tree, int val )
+bool vEB_insert ( TvEB *& tree, int val, int parentUniSqrt )
 {
-  if ( val < 0 || val >= uni ) return false;
-
   if ( !tree )
   {
-    tree = new TvEB();
+    tree = new TvEB ( parentUniSqrt );
   }
+
+#ifdef DEBUG
+  DEBUG_OS << "inserting " << val << " to tree " << tree
+  << " of size " << tree->uni << DEBUG_OS_ENDL;
+#endif /* DEBUG */
+
+  if ( val < 0 || val >= tree->uni ) return false;
 
   if ( tree->min == val ) return false;
 
@@ -83,21 +88,30 @@ bool vEB_insert ( TvEB *& tree, int val )
     tree->max = val;
   }
 
-  int highVal = high ( val );
-  if ( !tree->cluster[highVal] )
+  if ( tree->uni > 2 )
   {
-    if ( !vEB_insert ( tree->summary, highVal ) ) return false;
-  }
+    int lowVal = low ( tree, val );
+    int highVal = high ( tree, val );
+    if ( !tree->cluster[highVal] )
+    {
+      if ( !vEB_insert ( tree->summary, highVal, tree->uniSqrt ) ) return false;
+    }
 
-  if ( !vEB_insert ( tree->cluster[highVal], low ( val ) ) ) return false;
+    if ( !vEB_insert ( tree->cluster[highVal], lowVal, tree->uniSqrt ) ) return false;
+  }
   return true;
 }
 
 bool vEB_delete ( TvEB *& tree, int val )
 {
-  if ( val < 0 || val >= uni ) return false;
-
   if ( !tree ) return false;
+
+#ifdef DEBUG
+  DEBUG_OS << "deleting " << val << " from tree " << tree
+  << " of size " << tree->uni << DEBUG_OS_ENDL;
+#endif /* DEBUG */
+
+  if ( val < 0 || val >= tree->uni ) return false;
 
   if ( tree->min == val )
   {
@@ -110,20 +124,24 @@ bool vEB_delete ( TvEB *& tree, int val )
       return true;
     }
 
-    val = tree->min = index ( i, tree->cluster[i]->min ); // should there be val = ?
+    val = tree->min = index ( tree, i, tree->cluster[i]->min ); // should there be val = ?
   }
 
-  int highVal = high ( val );
-  if ( !vEB_delete ( tree->cluster[highVal], low ( val ) ) ) return false;
-
-  int tmp;
-  if ( !vEB_min ( tree->cluster[highVal], tmp ) || tmp == UNDEFINED )
+  if ( tree->uni > 2 )
   {
-    if ( !vEB_delete ( tree->summary, highVal ) ) return false;
+    int highVal = high ( tree, val );
+    if ( !vEB_delete ( tree->cluster[highVal], low ( tree, val ) ) ) return false;
+
+    int tmp;
+    if ( !vEB_min ( tree->cluster[highVal], tmp ) || tmp == UNDEFINED )
+    {
+      if ( !vEB_delete ( tree->summary, highVal ) ) return false;
+    }
   }
 
   if ( tree->max == val )
   {
+    int tmp;
     if ( !vEB_min ( tree->summary, tmp ) || tmp == UNDEFINED )
     {
       tree->max = tree->min;
@@ -132,7 +150,7 @@ bool vEB_delete ( TvEB *& tree, int val )
     {
       int i;
       if ( !vEB_min ( tree->summary, i ) ) return false;
-      tree->max = index ( i, tree->cluster[i]->max );
+      tree->max = index ( tree, i, tree->cluster[i]->max );
     }
   }
   return true;
@@ -141,19 +159,52 @@ bool vEB_delete ( TvEB *& tree, int val )
 bool vEB_find ( TvEB * tree, int val )
 {
   if ( !tree ) return false;
+
+#ifdef DEBUG
+  DEBUG_OS << "looking for " << val << " in tree " << tree << DEBUG_OS_ENDL;
+#endif /* DEBUG */
+
+  if ( val < 0 || val >= tree->uni ) return false;
   if ( tree->min == val ) return true;
-  if ( !vEB_find ( tree->cluster[high ( val )], low ( val ) ) ) return false;
+  if ( tree->uni <= 2 )
+  {
+    return tree->max == val;
+  }
+  if ( !vEB_find ( tree->cluster[high ( tree, val )], low ( tree, val ) ) )
+    return false;
   return true;
 }
 
 bool vEB_succ ( TvEB * tree, int val, int & res )
 {
-  if ( val < 0 || val >= uni ) return false;
-
   if ( !tree ) return false;
 
-  int lowVal = low ( val );
-  int highVal = high ( val );
+#ifdef DEBUG
+  DEBUG_OS << "looking for successor of " << val << " in tree " << tree
+  << " of size " << tree->uni << DEBUG_OS_ENDL;
+#endif /* DEBUG */
+
+  if ( val < -1 || val >= tree->uni ) return false;
+
+  if ( tree->min > val )
+  {
+    res = tree->min;
+    return true;
+  }
+
+  if ( tree->uni <= 2 )
+  {
+    if ( tree->max > val )
+    {
+      res = tree->max;
+      return true;
+    }
+    return false;
+  }
+
+
+  int lowVal = low ( tree, val );
+  int highVal = high ( tree, val );
   int i = highVal;
   int j = UNDEFINED;
   int tmp;
@@ -163,26 +214,92 @@ bool vEB_succ ( TvEB * tree, int val, int & res )
   }
   else
   {
-    if ( !vEB_succ ( tree->summary, highVal, i ) ) return false;
+    if ( !vEB_succ ( tree->summary, highVal, i ) )
+    {
+      if ( tree->max > val )
+      {
+        res = tree->max;
+        return true;
+      }
+      return false;
+    }
     if ( !vEB_min ( tree->cluster[i], j ) ) return false;
   }
 
-  res = index ( i, j );
+  res = index ( tree, i, j );
   return true;
 }
 
 bool vEB_pred ( TvEB * tree, int val, int & res )
 {
-  return false;
+  if ( !tree ) return false;
+
+#ifdef DEBUG
+  DEBUG_OS << "looking for predecessor of " << val << " in tree " << tree
+  << " of size " << tree->uni << DEBUG_OS_ENDL;
+#endif /* DEBUG */
+
+  if ( val < 0 || val > tree->uni ) return false;
+
+  if ( tree->max < val )
+  {
+    res = tree->max;
+    return true;
+  }
+
+  if ( tree->uni <= 2 )
+  {
+    if ( tree->min < val )
+    {
+      res = tree->min;
+      return true;
+    }
+    return false;
+  }
+
+  int lowVal = low ( tree, val );
+  int highVal = high ( tree, val );
+  int i = highVal;
+  int j = UNDEFINED;
+  int tmp;
+  if ( vEB_min ( tree->cluster[i], tmp ) && lowVal > tmp )
+  {
+    if ( !vEB_pred ( tree->cluster[i], lowVal, j ) ) return false;
+  }
+  else
+  {
+    if ( !vEB_pred ( tree->summary, highVal, i ) )
+    {
+      if ( tree->min < val )
+      {
+        res = tree->min;
+        return true;
+      }
+      return false;
+    }
+    if ( !vEB_max ( tree->cluster[i], j ) ) return false;
+  }
+
+  res = index ( tree, i, j );
+  return true;
 }
 
-void vEB_print ( TvEB * tree, ostream & os )
+void vEB_print ( TvEB * tree, std::ostream & os )
 {
   if ( !tree ) return;
-  os << "tree: " << tree << endl;
-  os << "summary: " << tree->summary << endl;
-  for ( int i = 0; i < uniSqrt; ++i )
+  os << "tree: " << tree << std::endl;
+  os << "min: " << tree->min << ", max: " << tree->max << std::endl;
+  os << "uni: " << tree->uni << ", uniSqrt: " << tree->uniSqrt << std::endl;
+  os << "summary: " << tree->summary << std::endl;
+  if ( tree->uni > 2 )
   {
-    os << "cluster " << i << ": " << tree->cluster[i] << endl;
+    for ( int i = 0; i < tree->uniSqrt; ++i )
+    {
+      os << "cluster " << i << ": " << tree->cluster[i] << std::endl;
+    }
+  }
+  else
+  {
+    os << "cluster " << tree->cluster << std::endl;
   }
 }

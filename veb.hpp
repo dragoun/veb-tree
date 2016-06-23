@@ -23,15 +23,14 @@
 #include <cmath>
 #include <climits>
 #include <cstdlib>
-
 #include <cstdio>
 #include <iostream>
-using namespace std;
+
+// #define DEBUG
+#define DEBUG_OS std::cout
+#define DEBUG_OS_ENDL std::endl
 
 #define UNDEFINED INT_MIN
-
-const int uni = 16;
-const int uniSqrt = sqrt ( uni );
 
 /***************************************************************************//**
  * @brief      Struct containing the Van Emde Boas tree.
@@ -52,46 +51,67 @@ struct TvEB
 {
   /*************************************************************************//**
    * @brief      Constructor.
+   *
+   * @param[in]  uniSize  The size of the tree universe
    ****************************************************************************/
-  TvEB()
+  TvEB ( int uniSize )
+    : uni ( uniSize ), uniSqrt ( sqrt ( uniSize ) ), min ( UNDEFINED ),
+      max ( UNDEFINED ), summary ( NULL )
   {
-    min = UNDEFINED;
-    max = UNDEFINED;
-    summary = NULL;
-    cluster = new TvEB * [uniSqrt];
-    for ( int i = 0; i < uniSqrt; ++i )
+    if ( uni > 2 )
     {
-      cluster[i] = NULL;
+      cluster = new TvEB * [uniSqrt];
+      for ( int i = 0; i < uniSqrt; ++i )
+      {
+        cluster[i] = NULL;
+      }
+    }
+    else
+    {
+      cluster = NULL;
     }
   }
 
   ~TvEB()
   {
     if ( summary ) delete summary;
-    for ( int i = 0; i < uniSqrt; ++i )
+    if ( cluster )
     {
-      if ( cluster[i] ) delete cluster[i];
+      for ( int i = 0; i < uniSqrt; ++i )
+      {
+        if ( cluster[i] ) delete cluster[i];
+      }
+      delete [] cluster;
     }
-    delete [] cluster;
   }
 
   /*************************************************************************//**
-   * @brief      Minimal value in the tree.
+   * @brief      The size of the universe.
+   ****************************************************************************/
+  const int uni;
+
+  /*************************************************************************//**
+   * @brief      The square root of the universe size.
+   ****************************************************************************/
+  const int uniSqrt;
+
+  /*************************************************************************//**
+   * @brief      The minimal value in the tree.
    ****************************************************************************/
   int min;
 
   /*************************************************************************//**
-   * @brief      Maximal value in the tree.
+   * @brief      The maximal value in the tree.
    ****************************************************************************/
   int max;
 
   /*************************************************************************//**
-   * @brief      Pointer to the summary structure of the tree.
+   * @brief      The pointer to the summary structure of the tree.
    ****************************************************************************/
   TvEB * summary;
 
   /*************************************************************************//**
-   * @brief      Pointer to the array of clusters of the tree.
+   * @brief      The pointer to the array of clusters of the tree.
    ****************************************************************************/
   TvEB ** cluster;
 };
@@ -100,31 +120,33 @@ struct TvEB
 /***************************************************************************//**
  * @brief      Returns the element's index in the cluster.
  *
+ * @param[in]  tree  The pointer to the van Emde Boas tree.
  * @param[in]  val   The value of the element.
  *
  * @return     The element's index in the cluster.
  ******************************************************************************/
-int low ( int val );
+int low ( TvEB * tree, int val );
 
 /***************************************************************************//**
  * @brief      Returns the index of the element's cluster.
  *
- * @param[in]  x     The value of the element.
- * @param[in]  u     The size of the universe.
+ * @param[in]  tree  The pointer to the van Emde Boas tree.
+ * @param[in]  val   The value of the element.
  *
  * @return     The index of the element's cluster.
  ******************************************************************************/
-int high ( int val );
+int high ( TvEB * tree, int val );
 
 /***************************************************************************//**
  * @brief      Returns the value on index low in the cluster high.
  *
+ * @param[in]  tree  The pointer to the van Emde Boas tree.
  * @param[in]  high  The cluster index.
  * @param[in]  low   The index of the element in the cluster.
  *
  * @return     The value of the element.
  ******************************************************************************/
-int index ( int high, int low );
+int index ( TvEB * tree, int high, int low );
 
 /***************************************************************************//**
  * @brief      Finds the lowest value stored in the given tree.
@@ -157,7 +179,7 @@ bool vEB_max ( TvEB * tree, int & res );
  * @retval     true   Successfully inserted the value.
  * @retval     false  Failed to insert the value.
  ******************************************************************************/
-bool vEB_insert ( TvEB *& tree, int val );
+bool vEB_insert ( TvEB *& tree, int val, int parentUniSqrt = 16 );
 
 /***************************************************************************//**
  * @brief      Removes the given value from the given vEB tree.
@@ -207,6 +229,12 @@ bool vEB_succ ( TvEB * tree, int val, int & res );
  ******************************************************************************/
 bool vEB_pred ( TvEB * tree, int val, int & res );
 
-void vEB_print ( TvEB * tree );
+/***************************************************************************//**
+ * @brief      Prints pointer values of the given tree.
+ *
+ * @param[in]  tree  The pointer to the van Emde Boas tree.
+ * @param      os    The output stream in which the values are printed.
+ ******************************************************************************/
+void vEB_print ( TvEB * tree, std::ostream & os );
 
 #endif /* __VEB_H_458976543568798867538649758687654752463747856374562543646__ */
