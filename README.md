@@ -1,4 +1,4 @@
-# veb-tree
+# van Emde Boas trees
 C/C++ implementation of van Emde Boas trees
 
 ## License
