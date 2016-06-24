@@ -58,6 +58,18 @@ struct TvEB
     : uni ( uniSize ), uniSqrt ( sqrt ( uniSize ) ), min ( UNDEFINED ),
       max ( UNDEFINED ), summary ( NULL )
   {
+    if ( uniSize <= 0 )
+    {
+      std::cerr << "universe size of TvEB must be bigger than 0" << std::endl;
+      return;
+    }
+
+    if ( uniSize >= 1 && ( uniSize & ( uniSize - 1 ) ) != 0 )
+    {
+      std::cerr << "universe size of TvEB must be power of 2" << std::endl;
+      return;
+    }
+
     if ( uni > 2 )
     {
       cluster = new TvEB * [uniSqrt];
@@ -179,7 +191,7 @@ bool vEB_max ( TvEB * tree, int & res );
  * @retval     true   Successfully inserted the value.
  * @retval     false  Failed to insert the value.
  ******************************************************************************/
-bool vEB_insert ( TvEB *& tree, int val, int parentUniSqrt = 16 );
+bool vEB_insert ( TvEB *& tree, int val, int parentUniSqrt = 65536 );
 
 /***************************************************************************//**
  * @brief      Removes the given value from the given vEB tree.

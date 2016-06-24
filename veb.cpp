@@ -68,7 +68,7 @@ bool vEB_insert ( TvEB *& tree, int val, int parentUniSqrt )
 
   if ( val < 0 || val >= tree->uni ) return false;
 
-  if ( tree->min == val ) return false;
+  if ( tree->min == val || tree->max == val ) return false;
 
   if ( tree->min == UNDEFINED )
   {
@@ -112,19 +112,26 @@ bool vEB_delete ( TvEB *& tree, int val )
 #endif /* DEBUG */
 
   if ( val < 0 || val >= tree->uni ) return false;
+  if ( tree->min > val || tree->max < val ) return false;
 
   if ( tree->min == val )
   {
     int i;
     if ( !vEB_min ( tree->summary, i ) || i == UNDEFINED )
     {
+      if ( tree->min != tree->max )
+      {
+        tree->min = tree->max;
+        return true;
+      }
+
       tree->min = tree->max = UNDEFINED;
       delete tree;
       tree = NULL;
       return true;
     }
 
-    val = tree->min = index ( tree, i, tree->cluster[i]->min ); // should there be val = ?
+    val = tree->min = index ( tree, i, tree->cluster[i]->min );
   }
 
   if ( tree->uni > 2 )
@@ -142,14 +149,14 @@ bool vEB_delete ( TvEB *& tree, int val )
   if ( tree->max == val )
   {
     int tmp;
-    if ( !vEB_min ( tree->summary, tmp ) || tmp == UNDEFINED )
+    if ( !vEB_max ( tree->summary, tmp ) || tmp == UNDEFINED )
     {
       tree->max = tree->min;
     }
     else
     {
       int i;
-      if ( !vEB_min ( tree->summary, i ) ) return false;
+      if ( !vEB_max ( tree->summary, i ) ) return false;
       tree->max = index ( tree, i, tree->cluster[i]->max );
     }
   }
@@ -165,8 +172,9 @@ bool vEB_find ( TvEB * tree, int val )
 #endif /* DEBUG */
 
   if ( val < 0 || val >= tree->uni ) return false;
+  if ( tree->min > val || tree->max < val ) return false;
   if ( tree->min == val ) return true;
-  if ( tree->uni <= 2 )
+  if ( !tree->summary )
   {
     return tree->max == val;
   }
@@ -192,7 +200,7 @@ bool vEB_succ ( TvEB * tree, int val, int & res )
     return true;
   }
 
-  if ( tree->uni <= 2 )
+  if ( !tree->summary )
   {
     if ( tree->max > val )
     {
@@ -201,7 +209,6 @@ bool vEB_succ ( TvEB * tree, int val, int & res )
     }
     return false;
   }
-
 
   int lowVal = low ( tree, val );
   int highVal = high ( tree, val );
@@ -247,7 +254,7 @@ bool vEB_pred ( TvEB * tree, int val, int & res )
     return true;
   }
 
-  if ( tree->uni <= 2 )
+  if ( !tree->summary )
   {
     if ( tree->min < val )
     {
