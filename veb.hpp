@@ -54,48 +54,12 @@ struct TvEB
    *
    * @param[in]  uniSize  The size of the tree universe
    ****************************************************************************/
-  TvEB ( int uniSize )
-    : uni ( uniSize ), uniSqrt ( sqrt ( uniSize ) ), min ( UNDEFINED ),
-      max ( UNDEFINED ), summary ( NULL )
-  {
-    if ( uniSize <= 0 )
-    {
-      std::cerr << "universe size of TvEB must be bigger than 0" << std::endl;
-      return;
-    }
+  TvEB ( int uniSize );
 
-    if ( uniSize >= 1 && ( uniSize & ( uniSize - 1 ) ) != 0 )
-    {
-      std::cerr << "universe size of TvEB must be power of 2" << std::endl;
-      return;
-    }
-
-    if ( uni > 2 )
-    {
-      cluster = new TvEB * [uniSqrt];
-      for ( int i = 0; i < uniSqrt; ++i )
-      {
-        cluster[i] = NULL;
-      }
-    }
-    else
-    {
-      cluster = NULL;
-    }
-  }
-
-  ~TvEB()
-  {
-    if ( summary ) delete summary;
-    if ( cluster )
-    {
-      for ( int i = 0; i < uniSqrt; ++i )
-      {
-        if ( cluster[i] ) delete cluster[i];
-      }
-      delete [] cluster;
-    }
-  }
+  /*************************************************************************//**
+   * @brief      Destructor.
+   ****************************************************************************/
+  ~TvEB();
 
   /*************************************************************************//**
    * @brief      The size of the universe.
@@ -106,6 +70,16 @@ struct TvEB
    * @brief      The square root of the universe size.
    ****************************************************************************/
   const int uniSqrt;
+
+  /*************************************************************************//**
+   * @brief      The lower square root of the universe size.
+   ****************************************************************************/
+  const int lowerUniSqrt;
+
+  /*************************************************************************//**
+   * @brief      The higher square root of the universe size.
+   ****************************************************************************/
+  const int higherUniSqrt;
 
   /*************************************************************************//**
    * @brief      The minimal value in the tree.
@@ -128,6 +102,34 @@ struct TvEB
   TvEB ** cluster;
 };
 
+/***************************************************************************//**
+ * @brief      Rounds up the given value to the next higher power of two.
+ *
+ * @param[in]  val   The value to round up.
+ *
+ * @return     The higher power of two from the given value.
+ ******************************************************************************/
+int powTwoRoundUp ( int val );
+
+/***************************************************************************//**
+ * @brief      Returns the lower square root of the given value, which is 2^(
+ *             floor ( log_2 ( value ) / 2 ) ).
+ *
+ * @param[in]  val   The value from which the lower square root is calculated.
+ *
+ * @return     The lower square root of the value.
+ ******************************************************************************/
+float lowerSqrt ( int val );
+
+/***************************************************************************//**
+ * @brief      Returns the higher square root of the given value, which is 2^(
+ *             ceil ( log_2 ( value ) / 2 ) ).
+ *
+ * @param[in]  val   The value from which the higher square root is calculated.
+ *
+ * @return     The higher square root of the value.
+ ******************************************************************************/
+float higherSqrt ( int val );
 
 /***************************************************************************//**
  * @brief      Returns the element's index in the cluster.

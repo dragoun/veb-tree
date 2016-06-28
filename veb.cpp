@@ -19,19 +19,79 @@
 
 #include "veb.hpp"
 
+TvEB::TvEB ( int uniSize )
+  : uni ( powTwoRoundUp ( uniSize ) ), uniSqrt ( sqrt ( uni ) ),
+    lowerUniSqrt ( lowerSqrt ( uni ) ), higherUniSqrt ( higherSqrt ( uni ) ),
+    min ( UNDEFINED ), max ( UNDEFINED ), summary ( NULL )
+{
+  if ( uniSize <= 0 )
+  {
+    std::cerr << "universe size of TvEB must be bigger than 0" << std::endl;
+    return;
+  }
+
+  if ( uni > 2 )
+  {
+    cluster = new TvEB * [higherUniSqrt];
+    for ( int i = 0; i < higherUniSqrt; ++i )
+    {
+      cluster[i] = NULL;
+    }
+  }
+  else
+  {
+    cluster = NULL;
+  }
+}
+
+TvEB::~TvEB()
+{
+  if ( summary ) delete summary;
+  if ( cluster )
+  {
+    for ( int i = 0; i < higherUniSqrt; ++i )
+    {
+      if ( cluster[i] ) delete cluster[i];
+    }
+    delete [] cluster;
+  }
+}
+
+int powTwoRoundUp ( int x )
+{
+  if ( x < 0 ) return 0;
+  --x;
+  x |= x >> 1;
+  x |= x >> 2;
+  x |= x >> 4;
+  x |= x >> 8;
+  x |= x >> 16;
+  return x + 1;
+}
+
+float lowerSqrt ( int val )
+{
+  return pow ( 2, floor ( log2 ( val )  / 2 ) );
+}
+
+float higherSqrt ( int val )
+{
+  return pow ( 2, ceil ( log2 ( val )  / 2 ) );
+}
+
 int low ( TvEB * tree, int val )
 {
-  return val % tree->uniSqrt;
+  return val % ( int ) lowerSqrt ( tree->uni );
 }
 
 int high ( TvEB * tree, int val )
 {
-  return val / tree->uniSqrt;
+  return val / lowerSqrt ( tree->uni );
 }
 
 int index ( TvEB * tree, int high, int low )
 {
-  return high * tree->uniSqrt + low;
+  return high * lowerSqrt ( tree->uni ) + low;
 }
 
 bool vEB_min ( TvEB * tree, int & res )
@@ -63,7 +123,7 @@ bool vEB_insert ( TvEB *& tree, int val, int parentUniSqrt )
 
 #ifdef DEBUG
   DEBUG_OS << "inserting " << val << " to tree " << tree
-  << " of size " << tree->uni << DEBUG_OS_ENDL;
+           << " of size " << tree->uni << DEBUG_OS_ENDL;
 #endif /* DEBUG */
 
   if ( val < 0 || val >= tree->uni ) return false;
@@ -94,10 +154,10 @@ bool vEB_insert ( TvEB *& tree, int val, int parentUniSqrt )
     int highVal = high ( tree, val );
     if ( !tree->cluster[highVal] )
     {
-      if ( !vEB_insert ( tree->summary, highVal, tree->uniSqrt ) ) return false;
+      if ( !vEB_insert ( tree->summary, highVal, tree->higherUniSqrt ) ) return false;
     }
 
-    if ( !vEB_insert ( tree->cluster[highVal], lowVal, tree->uniSqrt ) ) return false;
+    if ( !vEB_insert ( tree->cluster[highVal], lowVal, tree->lowerUniSqrt ) ) return false;
   }
   return true;
 }
@@ -108,7 +168,7 @@ bool vEB_delete ( TvEB *& tree, int val )
 
 #ifdef DEBUG
   DEBUG_OS << "deleting " << val << " from tree " << tree
-  << " of size " << tree->uni << DEBUG_OS_ENDL;
+           << " of size " << tree->uni << DEBUG_OS_ENDL;
 #endif /* DEBUG */
 
   if ( val < 0 || val >= tree->uni ) return false;
@@ -189,7 +249,7 @@ bool vEB_succ ( TvEB * tree, int val, int & res )
 
 #ifdef DEBUG
   DEBUG_OS << "looking for successor of " << val << " in tree " << tree
-  << " of size " << tree->uni << DEBUG_OS_ENDL;
+           << " of size " << tree->uni << DEBUG_OS_ENDL;
 #endif /* DEBUG */
 
   if ( val < -1 || val >= tree->uni ) return false;
@@ -243,7 +303,7 @@ bool vEB_pred ( TvEB * tree, int val, int & res )
 
 #ifdef DEBUG
   DEBUG_OS << "looking for predecessor of " << val << " in tree " << tree
-  << " of size " << tree->uni << DEBUG_OS_ENDL;
+           << " of size " << tree->uni << DEBUG_OS_ENDL;
 #endif /* DEBUG */
 
   if ( val < 0 || val > tree->uni ) return false;
@@ -297,10 +357,12 @@ void vEB_print ( TvEB * tree, std::ostream & os )
   os << "tree: " << tree << std::endl;
   os << "min: " << tree->min << ", max: " << tree->max << std::endl;
   os << "uni: " << tree->uni << ", uniSqrt: " << tree->uniSqrt << std::endl;
+  os << "lowerUniSqrt: " << tree->lowerUniSqrt;
+  os << ", higherUniSqrt: " << tree->higherUniSqrt << std::endl;
   os << "summary: " << tree->summary << std::endl;
   if ( tree->uni > 2 )
   {
-    for ( int i = 0; i < tree->uniSqrt; ++i )
+    for ( int i = 0; i < tree->higherUniSqrt; ++i )
     {
       os << "cluster " << i << ": " << tree->cluster[i] << std::endl;
     }

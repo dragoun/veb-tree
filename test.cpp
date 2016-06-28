@@ -198,12 +198,6 @@ void testSuite2 ( int universe = 65536 )
     return;
   }
 
-  if ( ( universe & ( universe - 1 ) ) != 0 )
-  {
-    std::cout << "universe size have to be power of 2s" << std::endl;
-    return;
-  }
-
   int res;
   int testCnt = 0;
   int failedTestsCnt = 0;
@@ -212,7 +206,7 @@ void testSuite2 ( int universe = 65536 )
 
   int timer = time ( NULL );
   // std::cout << timer << std::endl;
-  srand ( timer ); // 1466724922
+  srand ( timer );
   int numberCnt = 0;
   int * numbers = new int [universe];
   for ( int i = 0; i < universe; ++i )
@@ -244,10 +238,9 @@ void testSuite2 ( int universe = 65536 )
     {
       numbers[i] = 0;
     }
-    // std::cout << "numbers[" << i << "] = " << numbers[i] << std::endl;
   }
 
-  for ( int i = 0; i < rand() % 4; ++i )
+  for ( int i = 0; i < rand() % ( universe / 16 ); ++i )
   {
     int idx = rand() % universe;
     res = vEB_find ( tree, idx );
@@ -262,7 +255,7 @@ void testSuite2 ( int universe = 65536 )
     }
   }
 
-  for ( int i = 0; i < rand() % ( universe ); ++i )
+  for ( int i = 0; i < rand() % ( universe / 4 ); ++i )
   {
     int idx = rand() % universe;
     if ( numbers[idx] )
@@ -275,7 +268,7 @@ void testSuite2 ( int universe = 65536 )
         std::cout << "failed to delete " << idx << ", test number " << testCnt << std::endl;
         failedTestsCnt++;
       }
-      if ( rand() % 4 )
+      if ( rand() % 4 == 0 )
       {
         res = vEB_delete ( tree, idx );
         testCnt++;
@@ -298,7 +291,7 @@ void testSuite2 ( int universe = 65536 )
     }
   }
 
-  for ( int i = 0; i < universe % 8; ++i )
+  for ( int i = 0; i < rand() % ( universe / 8 ); ++i )
   {
     int idx = ( rand() % ( universe + 1 ) ) - 1;
     int succ;
@@ -329,7 +322,7 @@ void testSuite2 ( int universe = 65536 )
     }
   }
 
-  for ( int i = 0; i < universe % 8; ++i )
+  for ( int i = 0; i < rand() % ( universe / 8 ); ++i )
   {
     int idx = rand() % ( universe + 1 );
     int pred;
@@ -368,6 +361,10 @@ void testSuite2 ( int universe = 65536 )
 int main ( int argc, char ** argv )
 {
   testSuite1();
-  testSuite2();
+  for ( int i = 100; i < 8000000; i += ( rand() % 300000 ) + 50000 )
+  {
+    testSuite2 ( i );
+  }
+  testSuite2 ( 16777216 ); // 2 ^ 24
   return 0;
 }
